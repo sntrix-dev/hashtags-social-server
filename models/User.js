@@ -17,9 +17,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  profilePicture: {
-    type: String,
-    default: "",
+  avatar: {
+    asset_id: String,
+    public_id: String,
+    width: Number,
+    height: Number,
+    format: String,
+    resource_type: String,
+    bytes: Number,
+    url: String,
+    asset_folder: String,
   },
   bio: {
     type: String,

@@ -15,6 +15,9 @@ router.get("/:id", userController.getUserById);
 // Route to update an existing user by ID
 router.put("/profile", userController.updateUser);
 
+// Route to upload an avatar
+router.patch("/upload/avatar", userController.uploadAvatar);
+
 // Route to add a follower
 router.patch("/:id/follow/:action", userController.updateFollowers);
 

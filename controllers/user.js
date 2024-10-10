@@ -2,6 +2,7 @@ const uploadImageToCloudinary = require("../lib/cloudinary");
 const User = require("../models/User"); // Assuming you have a User model defined
 const jwt = require("jsonwebtoken");
 const sanitizer = require("../lib/sanitizer");
+const formidable = require("formidable");
 
 const getUsers = async (req, res) => {
   try {
@@ -44,6 +45,53 @@ const getUserById = async (req, res) => {
   }
 };
 
+const uploadAvatar = async (req, res) => {
+  const form = new formidable.IncomingForm();
+
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res
+        .status(400)
+        .json({ message: "Error parsing form data", error: err });
+    }
+
+    const token = req.headers.authorization;
+
+    try {
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decodedToken.id;
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Handle file upload if a file is provided
+      if (files.profileImage) {
+        const imagePath = files.profileImage[0].filepath;
+
+        const avatar = await uploadImageToCloudinary(
+          imagePath,
+          !!user.avatar && {
+            public_id: user.avatar.public_id,
+            overwrite: true,
+            invalidate: true,
+            folder: "avatars",
+          }
+        );
+        user.avatar = avatar;
+      } else {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      await user.save();
+      res.status(200).json(sanitizer.user(user).avatar);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating avatar", error });
+    }
+  });
+};
+
 const updateUser = async (req, res) => {
   const token = req.headers.authorization;
   const updatedData = req.body;
@@ -51,12 +99,6 @@ const updateUser = async (req, res) => {
   try {
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decodedToken.id;
-
-    // Check if there's a file to upload
-    if (req.file) {
-      const result = await uploadImageToCloudinary(req.file.path);
-      updatedData.profilePicture = result.secure_url;
-    }
 
     const user = await User.findByIdAndUpdate(userId, updatedData, {
       new: true,
@@ -111,4 +153,5 @@ module.exports = {
   updateUser,
   getCurrentUser,
   updateFollowers,
+  uploadAvatar,
 };

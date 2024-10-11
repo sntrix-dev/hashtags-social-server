@@ -56,8 +56,23 @@ const logout = (req, res) => {
   res.json({ message: "User logged out successfully" });
 };
 
+const authorize = (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ message: "User authorized", decodedToken, authorized: true });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
+  authorize,
 };

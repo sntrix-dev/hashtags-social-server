@@ -12,6 +12,6 @@ router.post("/login", login);
 // Logout route
 router.post("/logout", logout);
 
-router.post("/authorize", authorize);
+router.get("/authorize", authorize);
 
 module.exports = router;

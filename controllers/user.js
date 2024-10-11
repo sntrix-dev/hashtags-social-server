@@ -19,7 +19,6 @@ const getCurrentUser = async (req, res) => {
 
   try {
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET); // Assuming you use JWT and have a secret key
-    console.log(decodedToken);
     const userId = decodedToken.id;
     const user = await User.findById(userId);
     if (!user) {
@@ -27,7 +26,6 @@ const getCurrentUser = async (req, res) => {
     }
     res.status(200).json(sanitizer.user(user));
   } catch (error) {
-    console.log("Error fetching user", error);
     res.status(500).json({ message: "Error fetching user", error });
   }
 };
@@ -125,7 +123,6 @@ const updateFollowers = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    console.log(action);
 
     if (action === "add") {
       if (!user.followers.includes(followerId)) {

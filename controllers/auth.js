@@ -6,7 +6,6 @@ const User = require("../models/User"); // Assuming you have a User model
 const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    console.log(req.body);
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -16,15 +15,12 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, email, password: hashedPassword });
-    console.log(newUser);
     await newUser.save();
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
     res.status(201).json({ message: "User registered successfully", token });
   } catch (error) {
-    console.log("Register error", error);
-
     // Check for validation errors
     if (error.name === "ValidationError") {
       return res.status(400).json({ error: error.message });
